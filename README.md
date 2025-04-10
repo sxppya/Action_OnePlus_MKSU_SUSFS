@@ -3,3 +3,5 @@
 
 # 原始项目
 [MKSU-SKN](https://github.com/ShirkNeko/KernelSU)
+
+sukisu内核构建自用测试
