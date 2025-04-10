@@ -120,17 +120,17 @@ jobs:
       - name: Apply KPM patch (SukiSU)
         if: ${{ github.event.inputs.kernelsu_variant == 'SukiSU' }}
         run: |
-         cd kernel_workspace/kernel_platform
-         git clone https://github.com/ShirkNeko/SukiSU_KernelPatch_patch.git SukiSU_patch || echo "拉取失败"
-         cd common
+         cd kernel_workspace/kernel_platform/common
+         echo "🎯 Release 下载 KPM 补丁中..."
+         curl -L https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.11-beta/patch_linux -o ./kpm.patch
 
-         if [ -f ../../../SukiSU_patch/kpm/patch_linux/patch_linux ]; then
-         echo "找到 KPM 补丁，开始打补丁"
-         cp ../../../SukiSU_patch/kpm/patch_linux/patch_linux ./kpm.patch
-         patch -p1 -F 3 < ./kpm.patch || echo "KPM 补丁失败，但继续构建"
+         if [ -s ./kpm.patch ]; then
+         echo "✅ 找到 KPM 补丁，开始打补丁"
+         patch -p1 -F 3 < ./kpm.patch || echo "⚠️ KPM 补丁失败，但继续构建"
          else
-         echo "未找到 KPM 补丁，跳过"
+         echo "❌ 下载失败或补丁为空，跳过"
          fi
+
  
         
       - name: Apply SUSFS Patches SukiSU
@@ -300,24 +300,6 @@ jobs:
         with:
          name: Image_KernelSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: kernel_workspace/kernel
-
-      - name: Upload to GitHub Releases
-        if: ${{ success() }}
-        uses: softprops/action-gh-release@v1
-        with:
-          name: "OnePlus 内核构建版本 ${{ github.run_number }}"
-          tag_name: "build-${{ github.run_number }}"
-          files: |
-            ./AnyKernel3/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Image to Telegram
-        if: ${{ success() }}
-        run: |
-          curl -F document=@./AnyKernel3/Image https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendDocument \
-               -F chat_id=6980427734 \
-               -F caption="\ud83c\udf1f OnePlus Kernel 构建成功！\n版本：${{ github.event.inputs.FEIL }}\nTag: build-${{ github.run_number }}"
 
       - name: Upload build logs if failed
         if: failure()
