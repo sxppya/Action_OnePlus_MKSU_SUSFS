@@ -301,3 +301,48 @@ jobs:
         with:
          name: Image_KernelSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: kernel_workspace/kernel
+
+      - name: Upload to GitHub Releases
+        if: ${{ success() }}
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "OnePlus 内核构建版本 ${{ github.run_number }}"
+          tag_name: "build-${{ github.run_number }}"
+          files: |
+            ./AnyKernel3/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Image to Telegram
+        if: ${{ success() }}
+        run: |
+          curl -F document=@./AnyKernel3/Image https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendDocument \
+               -F chat_id=6980427734 \
+               -F caption="\ud83c\udf1f OnePlus Kernel 构建成功！\n版本：${{ github.event.inputs.FEIL }}\nTag: build-${{ github.run_number }}"
+
+      - name: Upload build logs if failed
+        if: failure()
+        run: |
+          mkdir -p logs
+          cp -r kernel_workspace/kernel_platform/common/out logs/ || true
+          cp -r kernel_workspace/kernel_platform/out logs/ || true
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kernel_Build_Logs
+          path: logs/
+
+      - name: Telegram Notify
+        if: always()
+        run: |
+          STATUS="\u2705 构建成功"
+          if [ "${{ job.status }}" != "success" ]; then
+            STATUS="\u274c 构建失败"
+          fi
+
+          curl -s -X POST https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendMessage \
+            -d chat_id=6980427734 \
+            -d parse_mode="Markdown" \
+            -d text="*OnePlus 内核构建通知*\n\n🧱 构建状态：${STATUS}\n🔗 [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
