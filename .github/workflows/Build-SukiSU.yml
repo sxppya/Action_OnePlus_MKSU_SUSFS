@@ -336,17 +336,37 @@ jobs:
       - name: Compress AnyKernel3 to zip
         if: ${{ success() }}
         run: |
-         cd AnyKernel3
-         zip -r ../AnyKernel3.zip ./*
-         cd ..
+          ZIP_NAME=AnyKernel3_${{ github.event.inputs.FEIL }}_build${{ github.run_number }}.zip
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+          cd AnyKernel3
+          zip -r ../$ZIP_NAME ./*
+          cd ..
+
+      - name: Upload to GitHub Releases
+        if: ${{ success() }}
+        uses: softprops/action-gh-release@v1
+        with:
+         name: "OnePlus 内核构建版本 ${{ github.run_number }}"
+         tag_name: "build-${{ github.run_number }}"
+         files: |
+          ./${{ env.ZIP_NAME }}
+          ./AnyKernel3/*
+          env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload zip to Telegram
         if: ${{ success() }}
         run: |
-         curl -F document=@./AnyKernel3.zip https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendDocument \
-         -F chat_id=6980427734 \
-         -F caption="📦 OnePlus Kernel 构建完成！AK3 zip 文件如下：\n版本：${{ github.event.inputs.FEIL }}\nTag: build-${{ github.run_number }}"
+          curl -F document=@./${{ env.ZIP_NAME }} https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendDocument \
+          -F chat_id=6980427734 \
+          -F caption="📦 OnePlus Kernel 构建完成！AK3 zip 文件如下：\n设备：${{ github.event.inputs.FEIL }}\n版本：build-${{ github.run_number }}"
 
+      - name: Upload Image to Telegram
+        if: ${{ success() }}
+        run: |
+          curl -F document=@./AnyKernel3/Image https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendDocument \
+               -F chat_id=6980427734 \
+               -F caption="OnePlus Kernel 构建成功！\n版本：${{ github.event.inputs.FEIL }}\nTag: build-${{ github.run_number }}"
 
       - name: Telegram Notify
         if: always()
