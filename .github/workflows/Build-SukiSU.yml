@@ -42,7 +42,6 @@ on:
           - without ksu
           - tag
           - main
-          - susfs-dev
         default: main
       SUSFS_ENABLED:
         description: "添加 SUSFS"
@@ -117,6 +116,17 @@ jobs:
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
           export KSU_VERSION=$KSU_VERSION
           sed -i "s/DKSU_VERSION=12500/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
+
+      - name: Apply KPM patch (SukiSU)
+        if: ${{ github.event.inputs.kernelsu_variant == 'SukiSU' }}
+        run: |
+         cd kernel_workspace/kernel_platform
+         git clone https://github.com/ShirkNeko/SukiSU_patch.git
+         cd common
+         cp ../../SukiSU_patch/kpm/kpm.patch ./
+         echo "正在打 KPM 补丁..."
+         patch -p1 -F 3 < kpm.patch || echo "KPM 补丁失败"
+
           
       - name: Apply SUSFS Patches SukiSU
         if: ${{ (inputs.kernelsu_variant == 'SukiSU') && github.event.inputs.SUSFS_ENABLED == 'true' }}
