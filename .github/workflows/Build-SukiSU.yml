@@ -42,6 +42,7 @@ on:
           - without ksu
           - tag
           - main
+          - susfs-dev
         default: main
       SUSFS_ENABLED:
         description: "添加 SUSFS"
