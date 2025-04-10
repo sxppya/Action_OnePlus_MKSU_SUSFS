@@ -124,18 +124,15 @@ jobs:
          git clone https://github.com/ShirkNeko/SukiSU_KernelPatch_patch.git SukiSU_patch || echo "拉取失败"
          cd common
 
-         if [ -f ../../SukiSU_patch/kpm/patch_linux/patch_linux ]; then
+         if [ -f ../../../SukiSU_patch/kpm/patch_linux/patch_linux ]; then
          echo "找到 KPM 补丁，开始打补丁"
-         cp ../../SukiSU_patch/kpm/patch_linux/patch_linux ./kpm.patch
+         cp ../../../SukiSU_patch/kpm/patch_linux/patch_linux ./kpm.patch
          patch -p1 -F 3 < ./kpm.patch || echo "KPM 补丁失败，但继续构建"
          else
          echo "未找到 KPM 补丁，跳过"
          fi
-
-
-
-
-          
+ 
+        
       - name: Apply SUSFS Patches SukiSU
         if: ${{ (inputs.kernelsu_variant == 'SukiSU') && github.event.inputs.SUSFS_ENABLED == 'true' }}
         run: |
