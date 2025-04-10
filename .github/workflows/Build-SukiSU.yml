@@ -340,25 +340,25 @@ jobs:
         if: ${{ success() }}
         run: |
           curl -F document=@./${{ env.ZIP_NAME }} https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendDocument \
-          -F chat_id=6980427734 \
-          -F caption="📦 OnePlus Kernel 构建完成！AK3 zip 文件如下：\n设备：${{ github.event.inputs.FEIL }}\n版本：build-${{ github.run_number }}"
+               -F chat_id=6980427734 \
+               -F caption="📦 OnePlus Kernel 构建成功！AK3 zip 文件如下：设备：${{ github.event.inputs.FEIL }} 版本：build-${{ github.run_number }}"
 
       - name: Upload Image to Telegram
         if: ${{ success() }}
         run: |
           curl -F document=@./AnyKernel3/Image https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendDocument \
                -F chat_id=6980427734 \
-               -F caption="OnePlus Kernel 构建成功！\n版本：${{ github.event.inputs.FEIL }}\nTag: build-${{ github.run_number }}"
+               -F caption="OnePlus Kernel 构建成功！版本：${{ github.event.inputs.FEIL }} Tag: build-${{ github.run_number }}"
 
       - name: Telegram Notify
         if: always()
         run: |
-          STATUS="\u2705 构建成功"
+          STATUS=" 构建成功"
           if [ "${{ job.status }}" != "success" ]; then
-            STATUS="\u274c 构建失败"
+            STATUS=" 构建失败"
           fi
 
           curl -s -X POST https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendMessage \
             -d chat_id=6980427734 \
             -d parse_mode="Markdown" \
-            -d text="*OnePlus 内核构建通知*\n\n🧱 构建状态：${STATUS}\n🔗 [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            -d text="*OnePlus 内核构建通知*🧱 构建状态：${STATUS} 🔗 [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
