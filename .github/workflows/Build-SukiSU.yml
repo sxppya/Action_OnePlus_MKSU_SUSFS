@@ -309,7 +309,7 @@ jobs:
       - name: Compress AnyKernel3 to zip
         if: ${{ success() }}
         run: |
-          ZIP_NAME=AnyKernel3_${{ github.event.inputs.FEIL }}_build${{ github.run_number }}.zip
+          ZIP_NAME="${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}.zip"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
           cd AnyKernel3
           zip -r ../$ZIP_NAME ./*
@@ -320,10 +320,10 @@ jobs:
         env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
-          tag_name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
-          files: |
-           ./${{ env.ZIP_NAME }}
+         name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
+         tag_name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
+         files: ./${{ env.ZIP_NAME }}
+
 
       - name: Upload zip to Telegram (only for your repo)
         if: ${{ success() }}
@@ -331,7 +331,7 @@ jobs:
          if [[ "${{ github.repository_owner }}" == "sxppya" ]]; then
          curl -F document=@./${{ env.ZIP_NAME }} \
            -F chat_id=${{ secrets.TG_CHAT_ID }} \
-           -F caption="📦 内核构建成功！设备：${{ github.event.inputs.FEIL }}，版本：build-${{ github.run_number }}" \
+           -F caption="📦 内核构建完成！版本号：${{ env.KSUVER }} 设备：${{ github.event.inputs.FEIL }}" \
            https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument
            else
            echo "⛔ 非主仓库，跳过 Telegram 推送"
@@ -344,7 +344,7 @@ jobs:
          if [[ "${{ github.repository_owner }}" == "sxppya" ]]; then
          curl -F document=@./AnyKernel3/Image \
            -F chat_id=${{ secrets.TG_CHAT_ID }} \
-           -F caption="📦 Image 上传成功！设备：${{ github.event.inputs.FEIL }}，Tag：build-${{ github.run_number }}" \
+           -F caption="📦 Image 上传成功！设备：${{ github.event.inputs.FEIL }}，Tag：build-${{ env.KSUVER }} \
            https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument
            else
            echo "⛔ 非主仓库，跳过 Telegram 推送"
