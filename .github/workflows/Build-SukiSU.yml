@@ -296,14 +296,31 @@ jobs:
       - name: 🚨 Upload logs to Telegram (on failure)
         if: failure()
         run: |
-         if [[ "${{ github.repository_owner }}" == "ychenxuan" ]]; then
-         curl -F document=@logs.zip \
-           -F chat_id=${{ secrets.TG_CHAT_ID }} \
-           -F caption="❌ 构建失败！已打包日志。 设备：${{ github.event.inputs.FEIL }} 版本：build-${{ github.run_number }}" \
-           https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument
-           else
-           echo "⛔ 非主仓库，跳过 Telegram 推送"
-           fi
+         escape_markdown_v2() {
+         local raw="$1"
+         echo "$raw" | sed -e 's/\\/\\\\/g' -e 's/\*/\\*/g' -e 's/_/\\_/g' -e 's/\[/\\[/g' \
+                        -e 's/\]/\\]/g' -e 's/(/\\(/g' -e 's/)/\\)/g' -e 's/\./\\./g' \
+                        -e 's/-/\\-/g' -e 's/=/\\=/g' -e 's/!/\\!/g'
+         }
+
+         OWNER="${{ github.repository_owner }}"
+         if [[ "$OWNER" == "sxppya" ]]; then
+         FEIL_ESCAPED=$(escape_markdown_v2 "${{ github.event.inputs.FEIL }}")
+         VERSION_ESCAPED=$(escape_markdown_v2 "build-${{ github.run_number }}")
+
+         if [ -f logs.zip ]; then
+           curl -F document=@logs.zip \
+             -F chat_id=${{ secrets.TG_CHAT_ID }} \
+             -F caption="❌ 构建失败\\! 已打包日志\\.\n📱 设备：${FEIL_ESCAPED}\n🏷️ 版本：${VERSION_ESCAPED}" \
+             -F parse_mode=MarkdownV2 \
+             https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument
+         else
+         echo "⚠️ 未找到 logs.zip，跳过上传"
+         fi
+         else
+         echo "⛔ 非主仓库（$OWNER），跳过 Telegram 推送"
+         fi
+
 
           
       - name: Compress AnyKernel3 to zip
@@ -323,7 +340,7 @@ jobs:
          name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
          tag_name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
          files: ./${{ env.ZIP_NAME }}
-
+                ./AnyKernel3/Image
 
       - name: Upload zip to Telegram (only for your repo)
         if: ${{ success() }}
