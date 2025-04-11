@@ -401,11 +401,11 @@ jobs:
           REPO="${GITHUB_REPOSITORY}"
           TAG="oneplus_11_v-build-24"
 
-          RAW_TEXT="*OnePlus 内核构建通知* 🧱\n\
-              \u200B*状态：* ${STATUS}\n\
-              \u200B📦 *仓库：* ${REPO}\n\
-              \u200B🏷️ *版本：* ${TAG}\n\
-              \u200B🔗 [查看构建日志](https://github.com/${REPO}/actions/runs/${{ github.run_id }})"
+          RAW_TEXT="*OnePlus 内核构建通知* 🧱\
+                    *状态：* ${STATUS}\
+                    📦 *仓库：* ${REPO}\
+                    🏷️ *版本：* ${TAG}\
+                    🔗 [查看构建日志](https://github.com/${REPO}/actions/runs/${{ github.run_id }})"
 
               TEXT_ESCAPED=$(escape_markdown_v2 "$RAW_TEXT")
 
