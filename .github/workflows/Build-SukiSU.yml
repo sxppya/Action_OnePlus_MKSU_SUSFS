@@ -370,7 +370,7 @@ jobs:
 
 
       
-      - name: escape_markdown_v2() {
+      - name: telegram推送 {
          local raw="$1"
          echo "$raw" | sed -e 's/\\/\\\\/g' -e 's/\*/\\*/g' -e 's/_/\\_/g' -e 's//\/g' \
                     -e 's//\/g' -e 's/(/\/g' -e 's/)/\/g' -e 's/\./\\./g' \
