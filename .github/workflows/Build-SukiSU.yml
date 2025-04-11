@@ -324,8 +324,6 @@ jobs:
           tag_name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
           files: |
            ./${{ env.ZIP_NAME }}
-           ./AnyKernel3/*
-
 
       - name: Upload zip to Telegram (only for your repo)
         if: ${{ success() }}
