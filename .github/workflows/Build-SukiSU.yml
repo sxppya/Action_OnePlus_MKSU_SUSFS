@@ -272,19 +272,39 @@ jobs:
          name: Image_KernelSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
          path: kernel_workspace/kernel
 
-      - name: Upload build logs if failed
+      - name: 📦 Collect logs if build fails
         if: failure()
         run: |
-          mkdir -p logs
-          cp -r kernel_workspace/kernel_platform/common/out logs/ || true
-          cp -r kernel_workspace/kernel_platform/out logs/ || true
+         mkdir -p logs
+          echo "📅 构建时间：$(date '+%Y-%m-%d %H:%M:%S')" > logs/BUILD_INFO.txt
+          echo "📱 构建设备：${{ github.event.inputs.FEIL }}" >> logs/BUILD_INFO.txt
+          echo "🔢 构建版本：build-${{ github.run_number }}" >> logs/BUILD_INFO.txt
+          echo "📦 仓库来源：${{ github.repository }}" >> logs/BUILD_INFO.txt
+          echo "👤 仓库拥有者：${{ github.repository_owner }}" >> logs/BUILD_INFO.txt
+          cp -r kernel_workspace/kernel_platform/common/out logs/common || true
+          cp -r kernel_workspace/kernel_platform/out logs/platform || true
+          zip -r logs.zip logs || true
 
-      - name: Upload logs
+
+      - name: 🗂️ Upload build logs to GitHub
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: Kernel_Build_Logs
-          path: logs/
+         name: Kernel_Build_Logs_${{ github.run_number }}
+         path: logs.zip
+
+      - name: 🚨 Upload logs to Telegram (on failure)
+        if: failure()
+        run: |
+         if [[ "${{ github.repository_owner }}" == "ychenxuan" ]]; then
+         curl -F document=@logs.zip \
+           -F chat_id=${{ secrets.TG_CHAT_ID }} \
+           -F caption="❌ 构建失败！已打包日志。 设备：${{ github.event.inputs.FEIL }} 版本：build-${{ github.run_number }}" \
+           https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument
+           else
+           echo "⛔ 非主仓库，跳过 Telegram 推送"
+           fi
+
           
       - name: Compress AnyKernel3 to zip
         if: ${{ success() }}
@@ -307,29 +327,46 @@ jobs:
            ./AnyKernel3/*
 
 
-      - name: Upload zip to Telegram
+      - name: Upload zip to Telegram (only for your repo)
         if: ${{ success() }}
         run: |
-          curl -F document=@./${{ env.ZIP_NAME }} https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendDocument \
-               -F chat_id=6980427734 \
-               -F caption="📦 OnePlus Kernel 构建成功！AK3 zip 文件如下：设备：${{ github.event.inputs.FEIL }} 版本：build-${{ github.run_number }}"
+         if [[ "${{ github.repository_owner }}" == "ychenxuan" ]]; then
+         curl -F document=@./${{ env.ZIP_NAME }} \
+           -F chat_id=${{ secrets.TG_CHAT_ID }} \
+           -F caption="📦 内核构建成功！设备：${{ github.event.inputs.FEIL }}，版本：build-${{ github.run_number }}" \
+           https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument
+           else
+           echo "⛔ 非主仓库，跳过 Telegram 推送"
+           fi
 
-      - name: Upload Image to Telegram
+
+      - name: Upload Image to Telegram (only for your repo)
         if: ${{ success() }}
         run: |
-          curl -F document=@./AnyKernel3/Image https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendDocument \
-               -F chat_id=6980427734 \
-               -F caption="OnePlus Kernel 构建成功！版本：${{ github.event.inputs.FEIL }} Tag: build-${{ github.run_number }}"
+         if [[ "${{ github.repository_owner }}" == "ychenxuan" ]]; then
+         curl -F document=@./AnyKernel3/Image \
+           -F chat_id=${{ secrets.TG_CHAT_ID }} \
+           -F caption="📦 Image 上传成功！设备：${{ github.event.inputs.FEIL }}，Tag：build-${{ github.run_number }}" \
+           https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument
+           else
+           echo "⛔ 非主仓库，跳过 Telegram 推送"
+           fi
 
-      - name: Telegram Notify
+
+      - name: Telegram Notify (Only for main repo)
         if: always()
         run: |
-          STATUS=" 构建成功"
+          if [[ "${{ github.repository_owner }}" == "ychenxuan" ]]; then
+          STATUS="✅ 构建成功"
           if [ "${{ job.status }}" != "success" ]; then
-            STATUS=" 构建失败"
+          STATUS="❌ 构建失败"
           fi
 
-          curl -s -X POST https://api.telegram.org/bot7741878234:AAEW0EkLowpHdD2lVwk9eydV_pkftf5DXwY/sendMessage \
-            -d chat_id=6980427734 \
-            -d parse_mode="Markdown" \
-            -d text="*OnePlus 内核构建通知*🧱 构建状态：${STATUS} 🔗 [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TG_CHAT_ID }} \
+          -d parse_mode="Markdown" \
+          -d text="*OnePlus 内核构建通知*🧱 状态：${STATUS} 📦 仓库：${{ github.repository }} 🔗 [构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          else
+          echo "⛔ 当前构建来源不是原始仓库，跳过 Telegram 推送。"
+          fi
+
