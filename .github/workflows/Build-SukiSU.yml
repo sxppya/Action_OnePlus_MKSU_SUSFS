@@ -330,7 +330,7 @@ jobs:
       - name: Upload zip to Telegram (only for your repo)
         if: ${{ success() }}
         run: |
-         if [[ "${{ github.repository_owner }}" == "ychenxuan" ]]; then
+         if [[ "${{ github.repository_owner }}" == "sxppya" ]]; then
          curl -F document=@./${{ env.ZIP_NAME }} \
            -F chat_id=${{ secrets.TG_CHAT_ID }} \
            -F caption="📦 内核构建成功！设备：${{ github.event.inputs.FEIL }}，版本：build-${{ github.run_number }}" \
@@ -343,7 +343,7 @@ jobs:
       - name: Upload Image to Telegram (only for your repo)
         if: ${{ success() }}
         run: |
-         if [[ "${{ github.repository_owner }}" == "ychenxuan" ]]; then
+         if [[ "${{ github.repository_owner }}" == "sxppya" ]]; then
          curl -F document=@./AnyKernel3/Image \
            -F chat_id=${{ secrets.TG_CHAT_ID }} \
            -F caption="📦 Image 上传成功！设备：${{ github.event.inputs.FEIL }}，Tag：build-${{ github.run_number }}" \
@@ -356,7 +356,7 @@ jobs:
       - name: Telegram Notify (Only for main repo)
         if: always()
         run: |
-          if [[ "${{ github.repository_owner }}" == "ychenxuan" ]]; then
+          if [[ "${{ github.repository_owner }}" == "sxppya" ]]; then
           STATUS="✅ 构建成功"
           if [ "${{ job.status }}" != "success" ]; then
           STATUS="❌ 构建失败"
