@@ -300,11 +300,12 @@ jobs:
         env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-         name: "OnePlus 内核构建版本 ${{ github.run_number }}"
-         tag_name: "build-${{ github.run_number }}"
-         files: |
-          ./${{ env.ZIP_NAME }}
-          ./AnyKernel3/*
+          name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
+          tag_name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
+          files: |
+           ./${{ env.ZIP_NAME }}
+           ./AnyKernel3/*
+
 
       - name: Upload zip to Telegram
         if: ${{ success() }}
