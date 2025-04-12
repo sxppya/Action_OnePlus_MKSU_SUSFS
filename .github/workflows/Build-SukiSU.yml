@@ -403,9 +403,9 @@ jobs:
 
           RAW_TEXT="*OnePlus 内核构建通知* 🧱\
                     *状态：* ${STATUS}\
-                    📦 *仓库：* ${REPO}\
-                    🏷️ *版本：* ${TAG}\
-                    🔗 [查看构建日志](https://github.com/${REPO}/actions/runs/${{ github.run_id }})"
+                    *仓库：* ${REPO}\
+                    *版本：* ${TAG}\
+                    [查看构建日志](https://github.com/${REPO}/actions/runs/${{ github.run_id }})"
 
               TEXT_ESCAPED=$(escape_markdown_v2 "$RAW_TEXT")
 
