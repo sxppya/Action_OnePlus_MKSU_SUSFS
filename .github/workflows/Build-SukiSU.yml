@@ -528,8 +528,8 @@ jobs:
         env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-         name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
-         tag_name: "${{ github.event.inputs.FEIL }}-build-${{ github.run_number }}"
+         name: "${{ env.KSUVER }}_${{ steps.feil_clean.outputs.value }}${{ steps.suffix.outputs.value }}"
+         tag_name: "${{ env.KSUVER }}_${{ steps.feil_clean.outputs.value }}${{ steps.suffix.outputs.value }}"
          files: |
           ./${{ env.ZIP_NAME }}
           ./AnyKernel3/Image
@@ -590,7 +590,7 @@ jobs:
           [[ "success" != "success" ]] && STATUS="❌ 构建失败"
 
           REPO="${GITHUB_REPOSITORY}"
-          TAG="oneplus_11_v-build-24"
+          TAG="${{ env.KSUVER }}_${{ steps.feil_clean.outputs.value }}${{ steps.suffix.outputs.value }}"
 
           RAW_TEXT="*OnePlus 内核构建通知* 🧱\
                     *状态：* ${STATUS}\
