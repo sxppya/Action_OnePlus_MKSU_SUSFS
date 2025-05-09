@@ -460,8 +460,8 @@ jobs:
       - name: Upload Image
         uses: actions/upload-artifact@v4
         with:
-         name: Image_KernelSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
-         path: kernel_workspace/kernel
+         name: Image_SukiSUUltra_${{ env.KSUVER }}_${{ steps.feil_clean.outputs.value }}${{ steps.suffix.outputs.value }}
+         path: kernel_workspace/kernel_platform/out/msm-kernel-kalama-gki/dist
 
       - name: 📦 Collect logs if build fails
         if: failure()
@@ -517,7 +517,7 @@ jobs:
       - name: Compress AnyKernel3 to zip
         if: ${{ success() }}
         run: |
-          ZIP_NAME="${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}.zip"
+          ZIP_NAME="${{ env.KSUVER }}_${{ steps.feil_clean.outputs.value }}${{ steps.suffix.outputs.value }}.zip"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
           cd AnyKernel3
           zip -r ../$ZIP_NAME ./*
